@@ -58,4 +58,15 @@ class UserController extends Controller {
         $user = Auth::user(); 
         return response()->json(['success' => $user], 200); 
     } 
+
+    /** 
+     * List all users api 
+     * 
+     * @return \Illuminate\Http\Response 
+     */ 
+    public function list() 
+    { 
+        $user = User::get(); 
+        return response()->json(['success' => $user], 200); 
+    } 
 }
