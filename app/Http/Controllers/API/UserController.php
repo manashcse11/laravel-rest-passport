@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use Illuminate\Http\Request; 
 use App\Http\Controllers\Controller; 
 use App\User; 
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Auth; 
 use Validator;
 
@@ -69,4 +71,15 @@ class UserController extends Controller {
         $user = User::get(); 
         return response()->json(['success' => $user], 200); 
     } 
+
+    public function newRole(Request $request){
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|unique:roles'
+        ]);
+        if($validator->fails()){
+            return response()->json(['error'=>$validator->errors()], 401);
+        }
+        $input = $request->all();
+        $role = Role::create(['name' => $input['name']]);
+    }
 }

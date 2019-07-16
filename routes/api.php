@@ -20,6 +20,7 @@ Route::post('register', 'API\UserController@register');
 Route::middleware('auth:api')->group( function () {
 	Route::post('details', 'API\UserController@details');
 	Route::get('list', 'API\UserController@list');
+	Route::post('role', 'API\UserController@newRole');
 });
 // Route::middleware('auth:api')->get('/user', function (Request $request) {
 //     return $request->user();
