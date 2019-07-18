@@ -13,15 +13,23 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::post('login', 'API\UserController@login');
-Route::post('register', 'API\UserController@register');
+Route::post('login', 'API\LoginController@login');
+// Route::post('register', 'API\UserController@register');
 
 
 Route::middleware('auth:api')->group( function () {
-	Route::post('details', 'API\UserController@details');
-	Route::get('list', 'API\UserController@list');
-	Route::post('role', 'API\UserController@newRole');
+	// Route::post('details', 'API\UserController@details');
+	// Route::get('list', 'API\UserController@index');
+	Route::resource('users', 'API\UserController');
+	Route::get('roles', 'API\PermissionController@role_list');
+	Route::post('roles', 'API\PermissionController@role_store');
+	Route::get('permissions', 'API\PermissionController@permission_list');
+	Route::post('permissions', 'API\PermissionController@permission_store');
+	Route::post('rolepermissions/{role}', 'API\PermissionController@role_has_permissions');
+	Route::post('assignuserrole/{role}', 'API\PermissionController@assign_user_to_role');
 });
+
+Route::resource('posts', 'API\PostController');
 // Route::middleware('auth:api')->get('/user', function (Request $request) {
 //     return $request->user();
 // });

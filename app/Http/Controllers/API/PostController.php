@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers\API;
 
-use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Post;
 
-class UserController extends Controller
+class PostController extends Controller
 {
     public $successStatus = 200;
+
+    public function __construct(){
+        $this->middleware(['auth:api'])->except('index', 'show');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -16,8 +21,8 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all(); 
-        return response()->json(['users' => $users], $this-> successStatus); 
+        $posts = Post::orderby('id', 'desc')->paginate(5);
+        return response()->json(['posts' => $posts], $this-> successStatus); 
     }
 
     /**
@@ -38,41 +43,41 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [ 
-            'name' => 'required', 
-            'email' => 'required|email', 
-            'password' => 'required', 
-            'c_password' => 'required|same:password', 
-        ]);
-        if ($validator->fails()) { 
-            return response()->json(['error'=>$validator->errors()], 401);            
+        //Validating title and body field
+        $this->validate($request, [
+            'user_id'=>'required|exists:users,id',
+            'title'=>'required|max:100',
+            'body' =>'required',
+            ]);
+
+        $title = $request['title'];
+        $body = $request['body'];
+
+        $post = Post::create($request->only('user_id', 'title', 'body'));
+        if($post){
+            return response()->json(['post' => $post], $this-> successStatus); 
         }
-        $input = $request->all(); 
-        $input['password'] = bcrypt($input['password']); 
-        $user = User::create($input); 
-        $success['token'] =  $user->createToken('MyApp')-> accessToken; 
-        $success['name'] =  $user->name;
-        return response()->json(['success'=>$success], $this-> successStatus); 
+        return response()->json(['error' => "Unable to create"], 401);        
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\User  $user
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(User $user)
+    public function show($id)
     {
-        return response()->json(['user'=>$user], $this-> successStatus); 
+        echo $id;
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\User  $user
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit(User $user)
+    public function edit($id)
     {
         //
     }
@@ -81,10 +86,10 @@ class UserController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\User  $user
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $user)
+    public function update(Request $request, $id)
     {
         //
     }
@@ -92,10 +97,10 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\User  $user
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(User $user)
+    public function destroy($id)
     {
         //
     }
