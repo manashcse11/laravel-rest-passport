@@ -9,6 +9,10 @@ use App\Http\Controllers\Controller;
 class UserController extends Controller
 {
     public $successStatus = 200;
+
+    public function __construct(){
+        $this->middleware(['isAdmin'])->only('index');
+    }
     /**
      * Display a listing of the resource.
      *

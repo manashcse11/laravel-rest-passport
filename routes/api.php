@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
 Route::post('login', 'API\LoginController@login');
 // Route::post('register', 'API\UserController@register');
 
-
+Route::get('unauthorized', 'API\LoginController@unauthorized');
 Route::middleware('auth:api')->group( function () {
 	// Route::post('details', 'API\UserController@details');
 	// Route::get('list', 'API\UserController@index');
@@ -28,6 +28,9 @@ Route::middleware('auth:api')->group( function () {
 	Route::post('rolepermissions/{role}', 'API\PermissionController@role_has_permissions');
 	Route::post('assignuserrole/{role}', 'API\PermissionController@assign_user_to_role');
 });
+// Route::middleware(['auth:api', 'isAdmin'])->group( function () {
+// 	Route::resource('users', 'API\UserController');
+// });
 
 Route::resource('posts', 'API\PostController');
 // Route::middleware('auth:api')->get('/user', function (Request $request) {
