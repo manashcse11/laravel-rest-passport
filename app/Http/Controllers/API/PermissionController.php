@@ -14,6 +14,9 @@ use Spatie\Permission\Models\Permission;
 class PermissionController extends Controller {
     public $successStatus = 200;
 
+    public function __construct(){
+        $this->middleware(['isAdmin']);
+    }
     /**
      * Display a listing of the resource.
      *
