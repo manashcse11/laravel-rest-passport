@@ -16,7 +16,6 @@ use Illuminate\Http\Request;
 Route::post('login', 'API\LoginController@login');
 // Route::post('register', 'API\UserController@register');
 
-Route::get('unauthorized', 'API\LoginController@unauthorized');
 Route::middleware('auth:api')->group( function () {
 	// Route::post('details', 'API\UserController@details');
 	// Route::get('list', 'API\UserController@index');

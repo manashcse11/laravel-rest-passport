@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Validator;
 
 class UserController extends Controller
 {

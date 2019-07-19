@@ -25,9 +25,4 @@ class LoginController extends Controller
             return response()->json(['error'=>'Unauthenticated'], 401); 
         } 
     }
-
-    public function unauthorized(){
-        exit('kjhxdsfkjdhs');
-        return response()->json(['error'=>'Unauthorised'], 401); 
-    }
 }
