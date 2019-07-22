@@ -22,7 +22,7 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::orderby('id', 'desc')->paginate(5);
+        $posts = Post::orderby('id', 'desc')->with('users')->paginate(5);
         return response()->json(['posts' => $posts], $this-> successStatus); 
     }
 
@@ -51,9 +51,6 @@ class PostController extends Controller
             'body' =>'required',
             ]);
 
-        $title = $request['title'];
-        $body = $request['body'];
-
         $post = Post::create($request->only('user_id', 'title', 'body'));
         if($post){
             return response()->json(['post' => $post], $this-> successStatus); 
@@ -67,9 +64,9 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Post $post)
     {
-        echo $id;
+        return response()->json(['post'=>$post], $this-> successStatus); 
     }
 
     /**
@@ -90,9 +87,13 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Post $post)
     {
-        //
+        // dd($request->input());
+        return response()->json(['post'=>$request], $this-> successStatus); 
+        // $post->title = $request
+        return Post::where('id', $id)->update($request->only('user_id', 'title', 'body'));
+        // return response()->json(['post'=>$post], $this-> successStatus); 
     }
 
     /**
