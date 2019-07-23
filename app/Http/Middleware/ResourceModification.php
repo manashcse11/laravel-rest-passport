@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Support\Facades\Auth;
 use App\User;
 
-class IsAdmin
+class ResourceModification
 {
     /**
      * Handle an incoming request.
@@ -17,7 +17,8 @@ class IsAdmin
      */
     public function handle($request, Closure $next)
     {
-        if(!Auth::user()->hasRole('Admin')){
+        $loggedin_user = Auth::user();
+        if(!$loggedin_user->hasRole('Admin') && $loggedin_user->id != $request->user_id){
             return response()->json(['error'=>'Unauthorised'], 401); 
         }
         return $next($request);

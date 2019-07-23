@@ -13,6 +13,7 @@ class PostController extends Controller
 
     public function __construct(){
         $this->middleware(['auth:api'])->except('index', 'show');
+        $this->middleware(['resourceModification'])->only('store', 'update', 'destroy');;
     }
 
     /**
@@ -45,12 +46,14 @@ class PostController extends Controller
     public function store(Request $request)
     {
         //Validating title and body field
-        $this->validate($request, [
+        $validator = Validator::make($request, [
             'user_id'=>'required|exists:users,id',
             'title'=>'required|max:100',
             'body' =>'required',
             ]);
-
+        if ($validator->fails()) { 
+            return response()->json(['error'=>$validator->errors()], 401);            
+        }
         $post = Post::create($request->only('user_id', 'title', 'body'));
         if($post){
             return response()->json(['post' => $post], $this-> successStatus); 
@@ -89,6 +92,14 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
+        $validator = Validator::make($request->all(), [
+            'user_id'=>'required|exists:users,id',
+            'title'=>'required|max:100',
+            'body' =>'required',
+            ]);
+        if ($validator->fails()) { 
+            return response()->json(['error'=>$validator->errors()], 401);            
+        }
         $input = $request->all();
         $post->title = $input['title'];
         $post->body = $input['body'];
