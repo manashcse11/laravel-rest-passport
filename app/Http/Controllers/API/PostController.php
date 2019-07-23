@@ -89,11 +89,12 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
-        // dd($request->input());
-        return response()->json(['post'=>$request], $this-> successStatus); 
-        // $post->title = $request
-        return Post::where('id', $id)->update($request->only('user_id', 'title', 'body'));
-        // return response()->json(['post'=>$post], $this-> successStatus); 
+        $input = $request->all();
+        $post->title = $input['title'];
+        $post->body = $input['body'];
+        $post->status = $input['status'];
+        $post->save();
+        return response()->json(['post'=>$post], $this-> successStatus); 
     }
 
     /**
@@ -102,8 +103,9 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Post $post)
     {
-        //
+        $post->delete();
+        return response()->json(['post'=>$post], $this-> successStatus); 
     }
 }
