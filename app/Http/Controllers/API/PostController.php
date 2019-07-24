@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use App\Post;
 use Validator;
 
@@ -13,7 +14,7 @@ class PostController extends Controller
 
     public function __construct(){
         $this->middleware(['auth:api'])->except('index', 'show');
-        $this->middleware(['resourceModification'])->only('store', 'update', 'destroy');;
+        $this->middleware(['resourceModification'])->only('update', 'destroy');;
     }
 
     /**
@@ -36,16 +37,20 @@ class PostController extends Controller
     public function store(Request $request)
     {
         //Validating title and body field
-        $validator = Validator::make($request, [
-            'user_id'=>'required|exists:users,id',
+        $validator = Validator::make($request->all(), [
             'title'=>'required|max:100',
             'body' =>'required',
             ]);
         if ($validator->fails()) { 
             return response()->json(['error'=>$validator->errors()], 401);            
         }
-        $post = Post::create($request->only('user_id', 'title', 'body'));
-        if($post){
+        $post = new Post;
+        $post->user_id = isset($request->user_id) ? $request->user_id : Auth::user()->id;
+        $post->title = $request->title;
+        $post->body = $request->body;
+
+        // $post = Post::create($request->only('user_id', 'title', 'body'));
+        if($post->save()){
             return response()->json(['post' => $post], $this-> successStatus); 
         }
         return response()->json(['error' => "Unable to create"], 401);        
@@ -72,7 +77,6 @@ class PostController extends Controller
     public function update(Request $request, Post $post)
     {
         $validator = Validator::make($request->all(), [
-            'user_id'=>'required|exists:users,id',
             'title'=>'required|max:100',
             'body' =>'required',
             ]);
@@ -82,7 +86,7 @@ class PostController extends Controller
         $input = $request->all();
         $post->title = $input['title'];
         $post->body = $input['body'];
-        $post->status = $input['status'];
+        $post->status = isset($input['status']) ? $input['status'] : $post->status;
         $post->save();
         return response()->json(['post'=>$post], $this-> successStatus); 
     }
