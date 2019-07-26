@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Post;
@@ -10,7 +11,6 @@ use Validator;
 
 class PostController extends Controller
 {
-    public $successStatus = 200;
 
     public function __construct(){
         $this->middleware(['auth:api'])->except('index', 'show');
@@ -25,7 +25,7 @@ class PostController extends Controller
     public function index()
     {
         $posts = Post::orderby('id', 'desc')->with('users')->paginate(5);
-        return response()->json(['posts' => $posts], $this-> successStatus); 
+        return response()->json(['posts' => $posts])->setStatusCode(Response::HTTP_OK); // 200
     }
 
     /**
@@ -42,18 +42,17 @@ class PostController extends Controller
             'body' =>'required',
             ]);
         if ($validator->fails()) { 
-            return response()->json(['error'=>$validator->errors()], 401);            
+            return response()->json(['error'=>$validator->errors()])->setStatusCode(Response::HTTP_UNPROCESSABLE_ENTITY); // 422            
         }
         $post = new Post;
         $post->user_id = isset($request->user_id) ? $request->user_id : Auth::user()->id;
         $post->title = $request->title;
         $post->body = $request->body;
 
-        // $post = Post::create($request->only('user_id', 'title', 'body'));
         if($post->save()){
-            return response()->json(['post' => $post], $this-> successStatus); 
+            return response()->json(['post' => $post])->setStatusCode(Response::HTTP_CREATED); // 201
         }
-        return response()->json(['error' => "Unable to create"], 401);        
+        return response()->json(['error' => "Unable to create"])->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);        // 500
     }
 
     /**
@@ -64,7 +63,7 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        return response()->json(['post'=>$post], $this-> successStatus); 
+        return response()->json(['post'=>$post])->setStatusCode(Response::HTTP_OK); // 200 
     }
 
     /**
@@ -81,14 +80,16 @@ class PostController extends Controller
             'body' =>'required',
             ]);
         if ($validator->fails()) { 
-            return response()->json(['error'=>$validator->errors()], 401);            
+            return response()->json(['error'=>$validator->errors()])->setStatusCode(Response::HTTP_UNPROCESSABLE_ENTITY); // 422                        
         }
         $input = $request->all();
         $post->title = $input['title'];
         $post->body = $input['body'];
         $post->status = isset($input['status']) ? $input['status'] : $post->status;
-        $post->save();
-        return response()->json(['post'=>$post], $this-> successStatus); 
+        if($post->save()){
+            return response()->json(['post' => $post])->setStatusCode(Response::HTTP_OK); // 200
+        }
+        return response()->json(['error' => "Unable to create"])->setStatusCode(Response::HTTP_NOT_MODIFIED);        // 304
     }
 
     /**
@@ -100,6 +101,6 @@ class PostController extends Controller
     public function destroy(Post $post)
     {
         $post->delete();
-        return response()->json(null, 204); 
+        return response()->json(null)->setStatusCode(Response::HTTP_NO_CONTENT);        // 204
     }
 }

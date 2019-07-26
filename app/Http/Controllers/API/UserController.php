@@ -4,15 +4,16 @@ namespace App\Http\Controllers\API;
 
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Http\Controllers\Controller;
 use Validator;
 
 class UserController extends Controller
 {
-    public $successStatus = 200;
 
     public function __construct(){
-        $this->middleware(['isAdmin'])->only('index');
+        $this->middleware(['isAdmin'])->only('index', 'store');
+        $this->middleware(['resourceModification'])->only('update', 'destroy');
     }
     /**
      * Display a listing of the resource.
@@ -22,17 +23,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all(); 
-        return response()->json(['users' => $users], $this-> successStatus); 
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return response()->json(['users' => $users])->setStatusCode(Response::HTTP_OK); // 200
     }
 
     /**
@@ -43,6 +34,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        //Validating title and body field
         $validator = Validator::make($request->all(), [ 
             'name' => 'required', 
             'email' => 'required|email', 
@@ -50,14 +42,17 @@ class UserController extends Controller
             'c_password' => 'required|same:password', 
         ]);
         if ($validator->fails()) { 
-            return response()->json(['error'=>$validator->errors()], 401);            
+            return response()->json(['error'=>$validator->errors()])->setStatusCode(Response::HTTP_UNPROCESSABLE_ENTITY); // 422            
         }
-        $input = $request->all(); 
-        $input['password'] = bcrypt($input['password']); 
-        $user = User::create($input); 
-        $success['token'] =  $user->createToken('MyApp')-> accessToken; 
-        $success['name'] =  $user->name;
-        return response()->json(['success'=>$success], $this-> successStatus); 
+        $user = new User;
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = bcrypt($request->password); 
+
+        if($user->save()){
+            return response()->json(['user' => $user])->setStatusCode(Response::HTTP_CREATED); // 201
+        }
+        return response()->json(['error' => "Unable to create"])->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);        // 500   
     }
 
     /**
@@ -68,18 +63,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return response()->json(['user'=>$user], $this-> successStatus); 
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\User  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(User $user)
-    {
-        //
+        return response()->json(['user'=>$user])->setStatusCode(Response::HTTP_OK); // 200 
     }
 
     /**
@@ -91,7 +75,20 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        //
+        $validator = Validator::make($request->all(), [ 
+            'name' => 'required', 
+            'email' => 'required|email',
+        ]);
+        if ($validator->fails()) { 
+            return response()->json(['error'=>$validator->errors()])->setStatusCode(Response::HTTP_UNPROCESSABLE_ENTITY); // 422                        
+        }
+        $input = $request->all();
+        $user->name = $input['name'];
+        $user->email = $input['email'];
+        if($user->save()){
+            return response()->json(['user' => $user])->setStatusCode(Response::HTTP_OK); // 200
+        }
+        return response()->json(['error' => "Unable to create"])->setStatusCode(Response::HTTP_NOT_MODIFIED);        // 304
     }
 
     /**
@@ -102,6 +99,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        //
+        $user->delete();
+        return response()->json(null)->setStatusCode(Response::HTTP_NO_CONTENT);        // 204
     }
 }
