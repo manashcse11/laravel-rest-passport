@@ -24,7 +24,12 @@ class PostController extends Controller
      */
     public function index(Request $request)
     {
-        $posts = Post::orderby('id', 'desc')->with('users')->paginate(isset($request->per_page) ? $request->per_page : 10);
+        $posts = Post::orderby('id', 'desc')
+            ->when($request->user_id, function($q, $user_id) {
+                return $q->where('user_id', $user_id);
+            })
+            ->with('users')
+            ->paginate(isset($request->per_page) ? $request->per_page : 10);
         return response()->json(['posts' => $posts])->setStatusCode(Response::HTTP_OK); // 200
     }
 
