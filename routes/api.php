@@ -31,6 +31,7 @@ Route::middleware('auth:api')->group( function () {
 // 	Route::resource('users', 'API\UserController');
 // });
 
+Route::get('users/{user}/posts', 'API\UserController@posts');
 Route::resource('posts', 'API\PostController');
 Route::fallback(function(){
     return response()->json(['message' => 'Not Found.'], 404);

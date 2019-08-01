@@ -102,4 +102,17 @@ class UserController extends Controller
         $user->delete();
         return response()->json(null)->setStatusCode(Response::HTTP_NO_CONTENT);        // 204
     }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\User  $user
+     * @return \Illuminate\Http\Response
+     */
+    public function posts(Request $request, User $user)
+    {
+        return response()
+            ->json(['user' => $user, 'posts' => $user->posts()->paginate(isset($request->per_page) ? $request->per_page : 10)])
+            ->setStatusCode(Response::HTTP_OK); // 200
+    }
 }
