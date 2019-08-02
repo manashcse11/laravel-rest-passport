@@ -112,7 +112,9 @@ class UserController extends Controller
     public function posts(Request $request, User $user)
     {
         return response()
-            ->json(['user' => $user, 'posts' => $user->posts()->paginate(isset($request->per_page) ? $request->per_page : 10)])
-            ->setStatusCode(Response::HTTP_OK); // 200
+            ->json([
+                'user' => $user
+                , 'posts' => $user->posts()->orderBy('id', 'desc')->paginate(isset($request->per_page) ? $request->per_page : 10)
+            ])->setStatusCode(Response::HTTP_OK); // 200
     }
 }
